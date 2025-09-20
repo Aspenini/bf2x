@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# bf2x.py — Brainfuck → multi-target transpiler (no JS/GDScript)
+# bf2x.py — Brainfuck → multi-target transpiler
 # Targets:
 #   1 Python  (.py)   [auto-run]
 #   2 Go      (.go)   [auto-run if `go` exists]
@@ -9,6 +9,8 @@
 #   6 Ruby    (.rb)
 #   7 Rust    (.rs)
 #   0 ALL     (emit all; auto-run py/go if available)
+#
+# Outputs are written to: <folder_of_input_bf>/transpiled/<base>_<suffix>.<ext>
 
 import sys, os, subprocess, tkinter as tk
 from tkinter import filedialog
@@ -285,9 +287,12 @@ def pick_bf_path() -> str:
         print("No file selected."); sys.exit(1)
     return p
 
-def write_out(code: str, base: str, ext: str) -> str:
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    out_path = os.path.join(script_dir, f"{base}{ext}")
+# ---- Output helpers (writes next to input .bf in a 'transpiled' folder) ----
+def write_out_next_to_input(bf_path: str, base: str, suffix: str, ext: str, code: str) -> str:
+    in_dir = os.path.dirname(os.path.abspath(bf_path))
+    out_dir = os.path.join(in_dir, "transpiled")
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, f"{base}{suffix}{ext}")
     with open(out_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(code)
     return out_path
@@ -319,7 +324,7 @@ def main():
             "python":"_py","go":"_go","cpp":"_cpp","csharp":"_cs",
             "lua":"_lua","ruby":"_rb","rust":"_rs"
         }[name]
-        out_path = write_out(code, f"{base}{suffix}", ext)
+        out_path = write_out_next_to_input(bf_path, base, suffix, ext, code)
         print(f"[ok] wrote {out_path}")
         if runner: try_run(runner, out_path)
 

@@ -1,0 +1,4 @@
+# build junk
+/build
+/dist
+*.spec
